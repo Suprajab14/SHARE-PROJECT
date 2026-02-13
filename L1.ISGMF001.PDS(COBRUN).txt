@@ -1,0 +1,8 @@
+//TECN013A JOB NOTIFY=&SYSUID                                           
+//RUN      EXEC PGM=CA11G013                                            
+//STEPLIB  DD DSN=TECN013.L1.ISGMF001.LOADLIB,DISP=SHR                  
+//SYSPRINT DD SYSOUT=*                                                  
+//INPSHRPS DD DSN=TECN013.L1J.SHARE.PS2,DISP=SHR                        
+//OUTSHRKS DD DSN=TECN013.L1J.SHARE.KSDS,DISP=SHR                       
+//ERRSHRPS DD DSN=TECN013.L1B.SHARE.ERR,DISP=SHR                        
+//SYSIN    DD DUMMY                                                     

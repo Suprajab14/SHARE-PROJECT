@@ -1,0 +1,42 @@
+//TECN013A JOB NOTIFY=&SYSUID                                           
+//STEP001  EXEC PGM=IEFBR14                                             
+//DD1      DD DSN=TECN013.L1J.SHARE.ACC,DISP=(MOD,DELETE,DELETE),       
+//            VOLUME=SER=ZAPRD4,SPACE=(TRK,(10,10)),                    
+//            DCB=(RECFM=FB,LRECL=80,BLKSIZE=800,DSORG=PS)              
+//DD2      DD DSN=TECN013.L1J.SHARE.INFY,DISP=(MOD,DELETE,DELETE),      
+//            VOLUME=SER=ZAPRD4,SPACE=(TRK,(10,10)),                    
+//            DCB=(RECFM=FB,LRECL=80,BLKSIZE=800,DSORG=PS)              
+//DD3      DD DSN=TECN013.L1J.SHARE.PS3,DISP=(MOD,DELETE,DELETE),       
+//            VOLUME=SER=ZAPRD4,SPACE=(TRK,(10,10)),                    
+//            DCB=(RECFM=FB,LRECL=80,BLKSIZE=800,DSORG=PS)              
+//STEP002  EXEC PGM=IEFBR14                                             
+//DD4      DD DSN=TECN013.L1J.SHARE.ACC,DISP=(NEW,CATLG,DELETE),        
+//            VOLUME=SER=ZAPRD4,SPACE=(TRK,(10,10)),                    
+//            DCB=(RECFM=FB,LRECL=80,BLKSIZE=800,DSORG=PS)              
+//DD5      DD DSN=TECN013.L1J.SHARE.INFY,DISP=(NEW,CATLG,DELETE),       
+//            VOLUME=SER=ZAPRD4,SPACE=(TRK,(10,10)),                    
+//            DCB=(RECFM=FB,LRECL=80,BLKSIZE=800,DSORG=PS)              
+//DD6      DD DSN=TECN013.L1J.SHARE.PS3,DISP=(NEW,CATLG,DELETE),        
+//            VOLUME=SER=ZAPRD4,SPACE=(TRK,(10,10)),                    
+//            DCB=(RECFM=FB,LRECL=80,BLKSIZE=800,DSORG=PS)              
+//STEP003  EXEC PGM=SORT                                                
+//SYSPRINT DD SYSOUT=*                                                  
+//SYSOUT   DD SYSOUT=*                                                  
+//SORTIN   DD DSN=TECN013.L1J.SHARE.PS2,DISP=SHR                        
+//SORTOUT1 DD DSN=TECN013.L1J.SHARE.ACC,DISP=SHR                        
+//SORTOUT2 DD DSN=TECN013.L1J.SHARE.INFY,DISP=SHR                       
+//SYSIN    DD *                                                         
+  SORT FIELDS=(1,5,CH,A)                                                
+  OUTFIL FNAMES=SORTOUT1,INCLUDE=(14,5,CH,EQ,C'ACC  ')                  
+  OUTFIL FNAMES=SORTOUT2,INCLUDE=(14,5,CH,EQ,C'INFY ')                  
+  SUM FIELDS=NONE                                                       
+/*                                                                      
+//STEP004  EXEC PGM=SORT                                                
+//SYSPRINT DD SYSOUT=*                                                  
+//SYSOUT   DD SYSOUT=*                                                  
+//SORTIN01 DD DSN=TECN013.L1J.SHARE.ACC,DISP=SHR                        
+//SORTIN02 DD DSN=TECN013.L1J.SHARE.INFY,DISP=SHR                       
+//SORTOUT  DD DSN=TECN013.L1J.SHARE.PS3,DISP=SHR                        
+//SYSIN    DD *                                                         
+  MERGE FIELDS=(1,5,CH,A)                                               
+/*                                                                    

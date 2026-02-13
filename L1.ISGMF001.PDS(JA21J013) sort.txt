@@ -1,0 +1,30 @@
+//TECN013A JOB NOTIFY=&SYSUID                                           
+//STEP001  EXEC PGM=IEFBR14                                             
+//DD1      DD DSN=TECN013.L1J.SHARE.PS2,DISP=(MOD,DELETE,DELETE),       
+//            VOLUME=SER=ZAPRD4,SPACE=(TRK,(10,10)),                    
+//            DCB=(RECFM=FB,LRECL=80,BLKSIZE=800,DSORG=PS)              
+//STEP002  EXEC PGM=IEFBR14                                             
+//DD2      DD DSN=TECN013.L1J.SHARE.PS2,DISP=(NEW,CATLG,DELETE),       
+//            VOLUME=SER=ZAPRD4,SPACE=(TRK,(10,10)),                  
+//            DCB=(RECFM=FB,LRECL=80,BLKSIZE=800,DSORG=PS)              
+//STEP002  EXEC PGM=SORT                                                
+//SYSPRINT DD SYSOUT=*                                                 
+//SYSOUT   DD SYSOUT=*                                                 
+//SORTIN   DD DSN=TECN013.L1J.SHARE.PS1,DISP=SHR                       
+//SORTOUT  DD DSN=TECN013.L1J.SHARE.PS2,DISP=SHR                        
+//SYSIN    DD *                                                         
+  SORT FIELDS=(1,5,CH,A,10,3,ZD,A),EQUALS                              
+  INCLUDE COND=(1,5,CH,NE,C'     ')                                 
+  SUM FIELDS=NONE                                                       
+/*                                                                     
+//STEP003  EXEC PGM=SORT                                                
+//SYSPRINT DD SYSOUT=*                                                  
+//SYSOUT   DD SYSOUT=*                                                  
+//SORTIN   DD DSN=TECN013.L1J.SHARE.PS2,DISP=SHR                        
+//SORTOUT  DD DSN=TECN013.L1J.SHARE.PS2,DISP=SHR                       
+//SYSIN    DD *                                                        
+  SORT FIELDS=(1,5,CH,A),EQUALS                                         
+  SUM FIELDS=NONE                                                      
+  OUTFIL STARTREC=2,ENDREC=9                                           
+/*                                                                     
+
