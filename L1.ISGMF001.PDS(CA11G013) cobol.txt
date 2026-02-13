@@ -1,0 +1,271 @@
+       IDENTIFICATION DIVISION.                                         
+       PROGRAM-ID. CA11G013.                                            
+       ENVIRONMENT DIVISION.                                            
+       INPUT-OUTPUT SECTION.                                            
+       FILE-CONTROL.                                                    
+           SELECT TI001-PS   ASSIGN       TO INPSHRPS                   
+                             ACCESS       IS SEQUENTIAL                 
+                             ORGANIZATION IS SEQUENTIAL                 
+                             FILE STATUS  IS WS05-FST-TI001.            
+           SELECT TO001-KSDS ASSIGN       TO OUTSHRKS                   
+                             ACCESS       IS SEQUENTIAL                 
+                             ORGANIZATION IS INDEXED                    
+                             RECORD KEY   IS TO001-SHARE-NO             
+                             FILE STATUS  IS WS05-FST-TO001.            
+           SELECT TO002-PS   ASSIGN       TO ERRSHRPS                   
+                             ACCESS       IS SEQUENTIAL                 
+                             ORGANIZATION IS SEQUENTIAL                 
+                             FILE STATUS  IS WS05-FST-TO002.            
+       DATA DIVISION.                                                   
+       FILE SECTION.                                                    
+       FD TI001-PS.                                                     
+       01 TI001-PS-REC.                                                 
+            05 TI001-SHARE-NO      PIC X(05).                           
+            05 FILLER              PIC X(01).                           
+            05 TI001-PER-HELD      PIC 9(02).                           
+            05 FILLER              PIC X(01).                           
+            05 TI001-NO-OF-SHARES  PIC 9(03).                           
+            05 FILLER              PIC X(01).                           
+            05 TI001-CORP-NAME     PIC X(05).                           
+            05 FILLER              PIC X(01).                           
+            05 TI001-CURR-PRICE    PIC 9(03).9(02).                     
+            05 FILLER              PIC X(55).                           
+       FD TO001-KSDS.                                                   
+       01 TO001-KSDS-REC.                                               
+            05 TO001-SHARE-NO      PIC X(05).                           
+            05 FILLER              PIC X(01).                           
+            05 TO001-PER-HELD      PIC 9(02).                           
+            05 FILLER              PIC X(01).                           
+            05 TO001-NO-OF-SHARES  PIC 9(03).                           
+            05 FILLER              PIC X(01).                           
+            05 TO001-CORP-NAME     PIC X(05).                           
+            05 FILLER              PIC X(01).                           
+            05 TO001-CURR-PRICE    PIC 9(03).9(02).                     
+            05 FILLER              PIC X(01).                           
+            05 TO001-CLASS         PIC X(02).                           
+            05 FILLER              PIC X(01).                           
+            05 TO001-RANGE         PIC X(01).                           
+            05 FILLER              PIC X(01).                           
+            05 TO001-OUT-SHR-PRICE PIC 9(05).9(03).                     
+            05 FILLER              PIC X(01).                           
+            05 TO001-INC-TAX       PIC 9(04).9(03).                     
+            05 FILLER              PIC X(31).                           
+       FD TO002-PS.                                                     
+       01 TO002-PS-REC.                                                 
+            05 TO002-SHARE-NO      PIC X(05).                           
+            05 FILLER              PIC X(01).                           
+            05 TO002-PER-HELD      PIC 9(02).                           
+            05 FILLER              PIC X(01).                           
+            05 TO002-NO-OF-SHARES  PIC 9(03).                           
+            05 FILLER              PIC X(01).                           
+            05 TO002-CORP-NAME     PIC X(05).                           
+            05 FILLER              PIC X(01).                           
+            05 TO002-CURR-PRICE    PIC X(06).                           
+            05 FILLER              PIC X(01).                           
+            05 TO002-ERR-FIELD     PIC X(15).                           
+            05 FILLER              PIC X(39).                           
+       WORKING-STORAGE SECTION.                                         
+       01 WS01-VARS.                                                    
+           05 WS05-FST-TI001       PIC 9(02).                           
+           05 WS05-FST-TO001       PIC 9(02).                           
+           05 WS05-FST-TO002       PIC 9(02).                           
+           05 WS05-TI001-COUNT     PIC 9(02).                           
+           05 WS05-ERR-FIELD       PIC X(15).                           
+           05 WS05-CURR-PRICE      PIC 9(03)V9(02).                     
+           05 WS05-CLASS           PIC X(02).                           
+           05 WS05-RANGE           PIC X(01).                           
+           05 WS05-OUT-SHR-PRICE   PIC 9(05)V9(03).                     
+           05 WS05-INC-TAX         PIC 9(04)V9(03).                     
+           05 WS05-NEW-PRICE       PIC 9(03)V9(02).                     
+           05 WS05-TABLE OCCURS 100 TIMES INDEXED BY WS-INDEX.          
+               10 WS10-SHARE-NO     PIC X(05).                          
+               10 WS10-PER-HELD     PIC 9(02).                          
+               10 WS10-NO-OF-SHARES PIC 9(03).                          
+               10 WS10-CORP-NAME    PIC X(05).                          
+       PROCEDURE DIVISION.                                              
+       0000-MAIN-PARA.                                                  
+           PERFORM 1000-INIT-PARA THRU 
+                   1000-INIT-PARA-EXIT.                                 
+           PERFORM 3000-PROCESS-PARA THRU
+                   3000-PROCESS-PARA-EXIT.                              
+           PERFORM 9000-TERM-PARA THRU
+                   9000-TERM-PARA-EXIT.
+       0000-MAIN-PARA-EXIT.
+           EXIT.                                      
+       1000-INIT-PARA.                                                  
+           SET WS-INDEX TO 1                                            
+           CONTINUE.                                                    
+       1000-INIT-PARA-EXIT.
+            EXIT.                                                        
+       9000-TERM-PARA.                                                  
+           STOP RUN.                                                    
+       9000-TERM-PARA-EXIT.
+        EXIT.
+       3000-PROCESS-PARA.                                                  
+           PERFORM 3100-OPEN-PARA THRU                                      
+              THRU 3100-OPEN-PARA-EXIT.                                  
+           PERFORM 3200-READ-PARA THRU                                       
+              THRU 3200-READ-PARA-EXIT.                                  
+             UNTIL WS05-FST-TI001 = 10                                  
+           PERFORM 3300-CLOSE-PARA THRU                                      
+              THRU 3300-CLOSE-PARA-EXIT.                                 
+       3000-PROCESS-PARA-EXIT.                                             
+           EXIT.                                                         
+       3100-OPEN-PARA.                                                  
+           OPEN INPUT TI001-PS                                          
+           EVALUATE TRUE                                                
+           WHEN WS05-FST-TI001 = 0                                      
+               DISPLAY 'PS FILE WAS OPENED.'                            
+           WHEN OTHER                                                   
+               DISPLAY 'PS FILE WAS FAILED TO OPEN. FST : '             
+                       WS05-FST-TI001                                   
+           END-EVALUATE                                                 
+           OPEN OUTPUT TO001-KSDS                                       
+           EVALUATE TRUE                                                
+           WHEN WS05-FST-TO001 = 0                                      
+               DISPLAY 'KSDS FILE WAS OPENED.'                          
+           WHEN OTHER                                                   
+               DISPLAY 'KSDS FILE WAS FAILED TO OPEN. FST : '           
+                       WS05-FST-TO001                                   
+           END-EVALUATE                                                 
+           OPEN OUTPUT TO002-PS                                         
+           EVALUATE TRUE                                                
+           WHEN WS05-FST-TO002 = 0                                      
+               DISPLAY 'ERROR FILE WAS OPENED.'                         
+           WHEN OTHER                                                   
+               DISPLAY 'ERROR FILE WAS FAILED TO OPEN. FST : '          
+                       WS05-FST-TO002                                   
+           END-EVALUATE.                                                 
+       3100-OPEN-PARA-EXIT.                                             
+           EXIT.                                                        
+       3200-READ-PARA.                                                  
+           MOVE SPACES TO TI001-PS-REC TO001-KSDS-REC TO002-PS-REC      
+           READ TI001-PS                                                
+           ADD 1 TO WS05-TI001-COUNT                                    
+           EVALUATE TRUE                                                
+           WHEN WS05-FST-TI001 = 0                                      
+               PERFORM 3210-VALIDATION-PARA THRU                            
+                       3210-VALIDATION-PARA-EXIT                        
+           WHEN WS05-FST-TI001 = 10                                     
+               DISPLAY 'ALL RECORDS WERE READ.'                         
+           WHEN OTHER                                                   
+               DISPLAY 'PS FILE WAS FAILED TO BE READ. FST : '          
+                       WS05-FST-TI001                                   
+               PERFORM 9000-TERM-PARA THRU
+               PERFORM 9000-TERM-PARA-EXIT                                  
+           END-EVALUATE.                                                 
+       3200-READ-PARA-EXIT.                                             
+           EXIT.                                                        
+       3210-VALIDATION-PARA.                                            
+           EVALUATE TRUE                                                
+           WHEN TI001-PER-HELD        IS NUMERIC             AND        
+                TI001-NO-OF-SHARES    IS NUMERIC             AND        
+                TI001-CORP-NAME       IS GREATER THAN SPACES AND        
+                TI001-CURR-PRICE(1:3) IS NUMERIC             AND        
+                TI001-CURR-PRICE(4:1) = '.' AND                         
+                TI001-CURR-PRICE(5:2) IS NUMERIC                        
+                PERFORM 3211-CALCULATION-PARA THRU                          
+                   THRU 3211-CALCULATION-PARA-EXIT                      
+           WHEN OTHER                                                   
+                DISPLAY 'INVALID RECORD WAS FOUND AT : '                
+                        WS05-TI001-COUNT                                
+                PERFORM 3213-ERROR-PARA THRU                               
+                   THRU 3213-ERROR-PARA-EXIT                            
+           END-EVALUATE.                                                 
+       3210-VALIDATION-PARA-EXIT.                                       
+           EXIT.                                                        
+       3213-ERROR-PARA.                                                 
+           EVALUATE TRUE                                                
+           WHEN TI001-PER-HELD        IS NOT NUMERIC                    
+               MOVE 'PER-HELD'        TO WS05-ERR-FIELD                 
+           WHEN TI001-NO-OF-SHARES    IS NOT NUMERIC                    
+               MOVE 'NO-OF-SHARES'    TO WS05-ERR-FIELD                 
+           WHEN TI001-CORP-NAME       = SPACES                          
+               MOVE 'CORP-NAME'       TO WS05-ERR-FIELD                 
+           WHEN TI001-CURR-PRICE(1:3) IS NOT NUMERIC      OR            
+                TI001-CURR-PRICE(4:1) IS NOT EQUAL TO '.' OR            
+                TI001-CURR-PRICE(5:2) IS NOT NUMERIC                    
+               MOVE 'CURR-PRICE'      TO WS05-ERR-FIELD                 
+           END-EVALUATE                                                 
+           MOVE TI001-SHARE-NO        TO TO002-SHARE-NO                 
+           MOVE TI001-PER-HELD        TO TO002-PER-HELD                 
+           MOVE TI001-NO-OF-SHARES    TO TO002-NO-OF-SHARES             
+           MOVE TI001-CORP-NAME       TO TO002-CORP-NAME                
+           MOVE TI001-CURR-PRICE(1:3) TO TO002-CURR-PRICE(1:3)          
+           MOVE TI001-CURR-PRICE(4:1) TO TO002-CURR-PRICE(4:1)          
+           MOVE TI001-CURR-PRICE(5:2) TO TO002-CURR-PRICE(5:2)          
+           MOVE TI001-CURR-PRICE      TO TO002-CURR-PRICE               
+           MOVE WS05-ERR-FIELD        TO TO002-ERR-FIELD                
+           WRITE TO002-PS-REC                                           
+           EVALUATE TRUE                                                
+           WHEN WS05-FST-TO002 = 0                                      
+               DISPLAY 'ERROR FILE HAS BEEN WRITTEN.'                   
+           WHEN OTHER                                                   
+               DISPLAY 'ERROR FILE WAS FAILED TO BE WRITTEN. FST : '    
+                       WS05-FST-TO002                                   
+           END-EVALUATE.                                                 
+       3213-ERROR-PARA-EXIT.                                            
+           EXIT.                                                        
+       3211-CALCULATION-PARA.                                           
+           MOVE ZEROS TO WS05-NEW-PRICE                                 
+                         WS10-PER-HELD     (WS-INDEX)                   
+                         WS10-NO-OF-SHARES (WS-INDEX)                   
+           MOVE TI001-SHARE-NO     TO WS10-SHARE-NO     (WS-INDEX)      
+           MOVE TI001-PER-HELD     TO WS10-PER-HELD     (WS-INDEX)      
+           MOVE TI001-NO-OF-SHARES TO WS10-NO-OF-SHARES (WS-INDEX)      
+           MOVE TI001-CORP-NAME    TO WS10-CORP-NAME    (WS-INDEX)      
+           EVALUATE TRUE                                                
+           WHEN WS10-PER-HELD (WS-INDEX) > 10                           
+               COMPUTE WS05-NEW-PRICE = WS10-NO-OF-SHARES (WS-INDEX)    
+                           + ( WS10-NO-OF-SHARES (WS-INDEX) ** 0.5)     
+               EVALUATE TRUE                                            
+               WHEN WS10-CORP-NAME (WS-INDEX) = 'INFY  ' AND            
+                    WS10-PER-HELD  (WS-INDEX) > 15                      
+                   MOVE 'C1' TO WS05-CLASS                              
+                   MOVE 'H'  TO WS05-RANGE                              
+               WHEN WS10-CORP-NAME (WS-INDEX) = 'ACC   ' AND            
+                    WS10-PER-HELD  (WS-INDEX) > 15                      
+                   MOVE 'C2' TO WS05-CLASS                              
+                   MOVE 'H'  TO WS05-RANGE                              
+               WHEN WS10-CORP-NAME (WS-INDEX) = 'TCS   ' AND            
+                    WS10-PER-HELD  (WS-INDEX) > 10                      
+                   MOVE 'C3' TO WS05-CLASS                              
+                   MOVE 'M'  TO WS05-RANGE                              
+               WHEN OTHER                                               
+                   MOVE 'C4' TO WS05-CLASS                              
+                   MOVE 'L'  TO WS05-RANGE                              
+               END-EVALUATE                                             
+               CALL 'CA21G013' USING WS05-OUT-SHR-PRICE WS05-NEW-PRICE  
+                                     WS05-INC-TAX                       
+                                     WS10-NO-OF-SHARES (WS-INDEX)       
+                                     WS10-PER-HELD     (WS-INDEX)       
+               PERFORM 3212-WRITE-PARA THRU                                 
+                       3212-WRITE-PARA-EXIT                             
+           END-EVALUATE.                                                 
+       3211-CALCULATION-PARA-EXIT.                                      
+           EXIT.                                                        
+       3212-WRITE-PARA.                                                 
+           MOVE WS10-SHARE-NO     (WS-INDEX) TO TO001-SHARE-NO          
+           MOVE WS10-PER-HELD     (WS-INDEX) TO TO001-PER-HELD          
+           MOVE WS10-NO-OF-SHARES (WS-INDEX) TO TO001-NO-OF-SHARES      
+           MOVE WS10-CORP-NAME    (WS-INDEX) TO TO001-CORP-NAME         
+           MOVE WS05-NEW-PRICE               TO TO001-CURR-PRICE        
+           MOVE WS05-CLASS                   TO TO001-CLASS             
+           MOVE WS05-RANGE                   TO TO001-RANGE             
+           MOVE WS05-OUT-SHR-PRICE           TO TO001-OUT-SHR-PRICE     
+           MOVE WS05-INC-TAX                 TO TO001-INC-TAX           
+           WRITE TO001-KSDS-REC                                         
+           SET WS-INDEX UP BY 1                                         
+           EVALUATE TRUE                                                
+           WHEN WS05-FST-TO001 = 0                                      
+               DISPLAY 'KSDS FILE HAS BEEN WRITTEN.'                    
+           WHEN OTHER                                                   
+               DISPLAY 'KSDS FILE WAS FAILED TO BE WRITTEN. FST : '     
+                       WS05-FST-TO001                                   
+           END-EVALUATE.                                                 
+       3212-WRITE-PARA-EXIT.                                            
+           EXIT.                                                        
+       3300-CLOSE-PARA.                                                 
+           CLOSE TI001-PS TO001-KSDS TO002-PS.                           
+       3300-CLOSE-PARA-EXIT.                                            
+           EXIT.                                                        
