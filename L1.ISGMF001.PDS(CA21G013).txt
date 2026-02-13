@@ -1,0 +1,20 @@
+       IDENTIFICATION DIVISION.                                         
+       PROGRAM-ID. CA21G013.                                            
+       DATA DIVISION.                                                   
+       LINKAGE SECTION.                                                 
+       77 LK77-OUT-SHR-PRICE PIC 9(05)V9(03).                           
+       77 LK77-NEW-PRICE     PIC 9(03)V9(02).                           
+       77 LK77-NO-OF-SHARES  PIC 9(03).                                 
+       77 LK77-INC-TAX       PIC 9(04)V9(03).                           
+       77 LK77-PER-HELD      PIC 9(02).                                 
+       PROCEDURE DIVISION USING LK77-OUT-SHR-PRICE LK77-NEW-PRICE       
+                                LK77-INC-TAX                            
+                                LK77-NO-OF-SHARES LK77-PER-HELD.        
+           COMPUTE LK77-OUT-SHR-PRICE =                                 
+                                LK77-NEW-PRICE * LK77-NO-OF-SHARES.     
+           COMPUTE LK77-INC-TAX =                                       
+                              ( LK77-OUT-SHR-PRICE / LK77-NEW-PRICE )   
+                              * LK77-PER-HELD.                          
+                                                                       
+           EXIT.                                                        
+           GOBACK.                                                      
